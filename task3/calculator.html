@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <link rel="stylesheet" href="calculator.css">
+</head>
+<body>
+    <div class="calculator">
+        <input type="text" class="calculator-screen" value="0" disabled />
+        <div class="calculator-keys">
+
+            <button type="button" class="key-clear" value="all-clear">C</button>
+            <button type="button" class="key-operator" value="%">%</button>
+            <button type="button" class="key-backspace" value="backspace">⌫</button>
+            <button type="button" class="key-operator" value="/">&divide;</button>
+
+            <button type="button" value="7">7</button>
+            <button type="button" value="8">8</button>
+            <button type="button" value="9">9</button>
+            <button type="button" class="key-operator" value="x">&times;</button>
+
+            <button type="button" value="4">4</button>
+            <button type="button" value="5">5</button>
+            <button type="button" value="6">6</button>
+            <button type="button" class="key-operator" value="-">-</button>
+
+            <button type="button" value="1">1</button>
+            <button type="button" value="2">2</button>
+            <button type="button" value="3">3</button>
+            <button type="button" class="key-operator" value="+">+</button>
+
+            <button type="button" value="00">00</button>
+            <button type="button" value="0">0</button>
+            <button type="button" value=".">.</button>
+            <button type="button" class="key-equals" value="=">=</button>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const display = document.querySelector('.calculator-screen');
+    const keys = document.querySelector('.calculator-keys');
+
+    let currentInput = '';
+    let equation = '';
+    let resultDisplayed = false;
+    let lastInputWasOperator = false;
+
+    keys.addEventListener('click', function (event) {
+        const key = event.target;
+        const value = key.value;
+
+        if (!key.matches('button')) return;
+
+        if (key.classList.contains('key-operator')) {
+            handleOperator(value);
+        } else if (key.classList.contains('key-equals')) {
+            handleEquals();
+        } else if (key.classList.contains('key-clear')) {
+            clearCalculator();
+        } else if (key.classList.contains('key-backspace')) {
+            handleBackspace();
+        } else {
+            inputDigit(value);
+        }
+    });
+
+    function inputDigit(digit) {
+        if (resultDisplayed) {
+            currentInput = digit;
+            resultDisplayed = false;
+            equation = '';
+        } else {
+            if (currentInput === '0' || lastInputWasOperator) {
+                currentInput = digit;
+            } else {
+                currentInput += digit;
+            }
+        }
+        lastInputWasOperator = false;
+        updateDisplay();
+    }
+
+    function handleOperator(operator) {
+        if (currentInput !== '' && !lastInputWasOperator) {
+            equation += currentInput + ' ' + operator + ' ';
+            currentInput = '';
+            lastInputWasOperator = true;
+        } else if (equation !== '' && lastInputWasOperator) {
+            equation = equation.slice(0, -3) + ' ' + operator + ' ';
+        }
+        updateDisplay();
+    }
+
+    function handleEquals() {
+        if (currentInput !== '' || (equation !== '' && !lastInputWasOperator)) {
+          
+            equation += currentInput;
+
+            try {
+                const result = evaluateExpression(equation);
+                display.value = `${result}`;
+                currentInput = result.toString();
+                equation = '';
+            } catch (error) {
+                display.value = 'Error';
+                currentInput = '';
+                equation = '';
+            }
+
+            resultDisplayed = true;
+            lastInputWasOperator = false;
+        }
+    }
+
+   
+    function evaluateExpression(expr) {
+    return new Function('return ' + expr.replace(/x/g, '*').replace(/[^-()\d/*+.%]/g, ''))();
+}
+
+
+    function handleBackspace() {
+        if (resultDisplayed) {
+            clearCalculator();
+        } 
+        else if (currentInput !== '') {
+            currentInput = currentInput.slice(0, -1);
+        } else if (equation !== '') {
+            equation = equation.trimEnd();
+    
+            equation = equation.slice(0, -1).trimEnd();
+        }
+
+        
+        if (currentInput === '' && equation === '') {
+            display.value = '0';
+        } else {
+            updateDisplay();
+        }
+
+        resultDisplayed = false;
+        lastInputWasOperator = false;
+    }
+
+    function clearCalculator() {
+        currentInput = '';
+        equation = '';
+        display.value = '0';
+        resultDisplayed = false;
+        lastInputWasOperator = false;
+    }
+
+    function updateDisplay() {
+       
+        if (currentInput === '' && equation === '') {
+            display.value = '0';
+        } else {
+            display.value = equation + currentInput;
+        }
+    }
+});
+
+ </script>
+</body>
+</html>
